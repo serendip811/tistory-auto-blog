@@ -1,0 +1,73 @@
+name: Tistory Auto Blog
+
+on:
+  schedule:
+    # Run at 00:00 UTC daily (09:00 KST)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+
+jobs:
+  auto-blog:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install Chrome
+      run: |
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Install ChromeDriver
+      run: |
+        # Get Chrome version
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+        
+        # Download and install ChromeDriver
+        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+        wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+        sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+        
+    - name: Install xvfb
+      run: |
+        sudo apt-get install -y xvfb
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run auto blog script
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        TISTORY_COOKIE: ${{ secrets.TISTORY_COOKIE }}
+        DISPLAY: :99
+      run: |
+        # Start xvfb for headless browser
+        Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+        
+        # Run the main script
+        python main.py
+        
+    - name: Commit and push used keywords
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add used_keywords.json if it exists and has changes
+        if [ -f "used_keywords.json" ]; then
+          git add used_keywords.json
+          git diff --staged --quiet || git commit -m "Update used keywords - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
+        fi
