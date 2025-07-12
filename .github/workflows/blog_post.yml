@@ -30,12 +30,12 @@ jobs:
     - name: Install ChromeDriver
       run: |
         # Get Chrome version
-        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1-3)
         
-        # Download and install ChromeDriver
-        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-        wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
-        sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
+        # Download and install ChromeDriver using Chrome for Testing
+        wget -O /tmp/chromedriver-linux64.zip "https://storage.googleapis.com/chrome-for-testing-public/$CHROME_VERSION/linux64/chromedriver-linux64.zip"
+        sudo unzip /tmp/chromedriver-linux64.zip -d /tmp/
+        sudo mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
         
     - name: Install xvfb
