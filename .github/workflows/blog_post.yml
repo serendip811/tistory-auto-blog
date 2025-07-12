@@ -2,8 +2,8 @@ name: Tistory Auto Blog
 
 on:
   schedule:
-    # Run at 00:00 UTC daily (09:00 KST)
-    - cron: '0 0 * * *'
+    # Run at 01:00 UTC daily (10:00 KST)
+    - cron: '0 1 * * *'
   workflow_dispatch:
     # Allow manual trigger
 
