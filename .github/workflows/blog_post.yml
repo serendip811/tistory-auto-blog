@@ -55,7 +55,9 @@ jobs:
     - name: Run auto blog script
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        TISTORY_COOKIE: ${{ secrets.TISTORY_COOKIE }}
+        TISTORY_USERNAME: ${{ secrets.TISTORY_USERNAME }}
+        TISTORY_PASSWORD: ${{ secrets.TISTORY_PASSWORD }}
+        TISTORY_URL: ${{ secrets.TISTORY_URL }}
         DISPLAY: :99
       run: |
         # Start xvfb for headless browser
